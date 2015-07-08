@@ -34,6 +34,7 @@ import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.interfaces.ChartInterface;
+import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.renderer.DataRenderer;
@@ -121,6 +122,8 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
 
     /** listener that is called when a value on the chart is selected */
     protected OnChartValueSelectedListener mSelectionListener;
+
+    protected ChartTouchListener mChartTouchListener;
 
     /** text that is displayed when the chart is empty */
     private String mNoDataText = "No chart data available.";
@@ -477,6 +480,9 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
         // set the indices to highlight
         mIndicesToHightlight = highs;
 
+        if(highs == null || highs.length == 0)
+            mChartTouchListener.setLastHighlighted(null);
+
         // redraw the chart
         invalidate();
     }
@@ -506,9 +512,11 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
      * highlightValues(...), this generates a callback to the
      * OnChartValueSelectedListener.
      *
-     * @param highs
+     * @param high
      */
     public void highlightTouch(Highlight high) {
+
+        Entry e = null;
 
         if (high == null)
             mIndicesToHightlight = null;
@@ -517,10 +525,17 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
             if (mLogEnabled)
                 Log.i(LOG_TAG, "Highlighted: " + high.toString());
 
-            // set the indices to highlight
-            mIndicesToHightlight = new Highlight[] {
-                    high
-            };
+            e = mData.getEntryForHighlight(high);
+            if (e == null || e.getXIndex() != high.getXIndex()) {
+                mIndicesToHightlight = null;
+                high = null;
+            }
+            else {
+                // set the indices to highlight
+                mIndicesToHightlight = new Highlight[] {
+                        high
+                };
+            }
         }
 
         // redraw the chart
@@ -531,13 +546,20 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
             if (!valuesToHighlight())
                 mSelectionListener.onNothingSelected();
             else {
-
-                Entry e = mData.getEntryForHighlight(high);
-
                 // notify the listener
                 mSelectionListener.onValueSelected(e, high.getDataSetIndex(), high);
             }
         }
+    }
+
+    /**
+     * Set a new (e.g. custom) ChartTouchListener NOTE: make sure to
+     * setTouchEnabled(true); if you need touch gestures on the chart
+     *
+     * @param l
+     */
+    public void setOnTouchListener(ChartTouchListener l) {
+        this.mChartTouchListener = l;
     }
 
     /**
@@ -570,7 +592,7 @@ public abstract class Chart<T extends ChartData<? extends DataSet<? extends Entr
                 Entry e = mData.getEntryForHighlight(mIndicesToHightlight[i]);
 
                 // make sure entry not null
-                if (e == null)
+                if (e == null || e.getXIndex() != mIndicesToHightlight[i].getXIndex())
                     continue;
 
                 float[] pos = getMarkerPosition(e, dataSetIndex);

@@ -35,7 +35,7 @@ import com.github.mikephil.charting.renderer.YAxisRenderer;
 import com.github.mikephil.charting.utils.FillFormatter;
 import com.github.mikephil.charting.utils.Highlight;
 import com.github.mikephil.charting.utils.PointD;
-import com.github.mikephil.charting.utils.SelInfo;
+import com.github.mikephil.charting.utils.SelectionDetail;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
 
@@ -147,8 +147,7 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
 
         mXAxisRenderer = new XAxisRenderer(mViewPortHandler, mXAxis, mLeftAxisTransformer);
 
-        mListener = new BarLineChartTouchListener<BarLineChartBase<? extends BarLineScatterCandleData<? extends BarLineScatterCandleDataSet<? extends Entry>>>>(
-                this, mViewPortHandler.getMatrixTouch());
+        mChartTouchListener = new BarLineChartTouchListener(this, mViewPortHandler.getMatrixTouch());
 
         mGridBackgroundPaint = new Paint();
         mGridBackgroundPaint.setStyle(Style.FILL);
@@ -564,28 +563,25 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
             return mRightAxisTransformer;
     }
 
-    /** touchlistener that handles touches and gestures on the chart */
-    protected OnTouchListener mListener;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
 
-        if (mListener == null || mDataNotSet)
+        if (mChartTouchListener == null || mDataNotSet)
             return false;
 
         // check if touch gestures are enabled
         if (!mTouchEnabled)
             return false;
         else
-            return mListener.onTouch(this, event);
+            return mChartTouchListener.onTouch(this, event);
     }
 
     @Override
     public void computeScroll() {
 
-        if (mListener instanceof BarLineChartTouchListener)
-            ((BarLineChartTouchListener<?>) mListener).computeScroll();
+        if (mChartTouchListener instanceof BarLineChartTouchListener)
+            ((BarLineChartTouchListener) mChartTouchListener).computeScroll();
     }
 
     /**
@@ -851,16 +847,6 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
     }
 
     /**
-     * set a new (e.g. custom) charttouchlistener NOTE: make sure to
-     * setTouchEnabled(true); if you need touch gestures on the chart
-     * 
-     * @param l
-     */
-    public void setOnTouchListener(OnTouchListener l) {
-        this.mListener = l;
-    }
-
-    /**
      * Sets the OnDrawListener
      * 
      * @param drawListener
@@ -1083,7 +1069,7 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
             xIndex = (int) base + 1;
         }
 
-        List<SelInfo> valsAtIndex = getYValsAtIndex(xIndex);
+        List<SelectionDetail> valsAtIndex = getSelectionDetailsAtIndex(xIndex);
 
         float leftdist = Utils.getMinimumDistance(valsAtIndex, y, AxisDependency.LEFT);
         float rightdist = Utils.getMinimumDistance(valsAtIndex, y, AxisDependency.RIGHT);
@@ -1104,16 +1090,16 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
     }
 
     /**
-     * Returns an array of SelInfo objects for the given x-index. The SelInfo
+     * Returns an array of SelectionDetail objects for the given x-index. The SelectionDetail
      * objects give information about the value at the selected index and the
      * DataSet it belongs to. INFORMATION: This method does calculations at
      * runtime. Do not over-use in performance critical situations.
      *
      * @return
      */
-    public List<SelInfo> getYValsAtIndex(int xIndex) {
+    protected List<SelectionDetail> getSelectionDetailsAtIndex(int xIndex) {
 
-        List<SelInfo> vals = new ArrayList<SelInfo>();
+        List<SelectionDetail> vals = new ArrayList<SelectionDetail>();
 
         float[] pts = new float[2];
 
@@ -1121,14 +1107,21 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
 
             DataSet<?> dataSet = mData.getDataSetByIndex(i);
 
+            // dont include datasets that cannot be highlighted
+            if(!dataSet.isHighlightEnabled())
+                continue;
+
             // extract all y-values from all DataSets at the given x-index
-            float yVal = dataSet.getYValForXIndex(xIndex);
+            final float yVal = dataSet.getYValForXIndex(xIndex);
+            if (yVal == Float.NaN)
+                continue;
+
             pts[1] = yVal;
 
             getTransformer(dataSet.getAxisDependency()).pointValuesToPixel(pts);
 
             if (!Float.isNaN(pts[1])) {
-                vals.add(new SelInfo(pts[1], i, dataSet));
+                vals.add(new SelectionDetail(pts[1], i, dataSet));
             }
         }
 
@@ -1409,12 +1402,36 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
         return mXAxisRenderer;
     }
 
+    /**
+     * Sets a custom XAxisRenderer and overrides the existing (default) one.
+     * @param xAxisRenderer
+     */
+    public void setXAxisRenderer(XAxisRenderer xAxisRenderer) {
+        mXAxisRenderer = xAxisRenderer;
+    }
+
     public YAxisRenderer getRendererLeftYAxis() {
         return mAxisRendererLeft;
     }
 
+    /**
+     * Sets a custom axis renderer for the left axis and overwrites the existing one.
+     * @param rendererLeftYAxis
+     */
+    public void setRendererLeftYAxis(YAxisRenderer rendererLeftYAxis) {
+        mAxisRendererLeft = rendererLeftYAxis;
+    }
+
     public YAxisRenderer getRendererRightYAxis() {
         return mAxisRendererRight;
+    }
+
+    /**
+     * Sets a custom axis renderer for the right acis and overwrites the existing one.
+     * @param rendererRightYAxis
+     */
+    public void setRendererRightYAxis(YAxisRenderer rendererRightYAxis) {
+        mAxisRendererRight = rendererRightYAxis;
     }
 
     public float getYChartMax() {
@@ -1442,7 +1459,7 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleData<? exte
      * Flag that indicates if auto scaling on the y axis is enabled. This is
      * especially interesting for charts displaying financial data.
      * 
-     * @param If enabled the y axis automatically adjusts to the min and max y
+     * @param enabled the y axis automatically adjusts to the min and max y
      *            values of the current x axis range whenever the viewport
      *            changes
      */

@@ -154,8 +154,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                         posOffset = (drawValueAboveBar ? valueOffsetPlus : -(valueTextWidth + valueOffsetPlus));
                         negOffset = (drawValueAboveBar ? -(valueTextWidth + valueOffsetPlus) : valueOffsetPlus);
 
-                        if (isInverted)
-                        {
+                        if (isInverted) {
                             posOffset = -posOffset - valueTextWidth;
                             negOffset = -negOffset - valueTextWidth;
                         }
@@ -195,8 +194,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                             posOffset = (drawValueAboveBar ? valueOffsetPlus : -(valueTextWidth + valueOffsetPlus));
                             negOffset = (drawValueAboveBar ? -(valueTextWidth + valueOffsetPlus) : valueOffsetPlus);
 
-                            if (isInverted)
-                            {
+                            if (isInverted) {
                                 posOffset = -posOffset - valueTextWidth;
                                 negOffset = -negOffset - valueTextWidth;
                             }
@@ -208,14 +206,24 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                         } else {
 
                             float[] transformed = new float[vals.length * 2];
-                            int cnt = 0;
-                            float add = e.getVal();
+                            float allPos = e.getPositiveSum();
+                            float allNeg = e.getNegativeSum();
 
-                            for (int k = 0; k < transformed.length; k += 2) {
+                            for (int k = 0, idx = 0; k < transformed.length; k += 2, idx++) {
 
-                                add -= vals[cnt];
-                                transformed[k] = (vals[cnt] + add) * mAnimator.getPhaseY();
-                                cnt++;
+                                float value = vals[idx];
+                                float y;
+
+                                if(value >= 0f) {
+
+                                    allPos -= value;
+                                    y = value + allPos;
+                                } else {
+                                    allNeg -= Math.abs(value);
+                                    y = value + allNeg;
+                                }
+
+                                transformed[k] = y * mAnimator.getPhaseY();
                             }
 
                             trans.pointValuesToPixel(transformed);
@@ -230,8 +238,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                                 posOffset = (drawValueAboveBar ? valueOffsetPlus : -(valueTextWidth + valueOffsetPlus));
                                 negOffset = (drawValueAboveBar ? -(valueTextWidth + valueOffsetPlus) : valueOffsetPlus);
 
-                                if (isInverted)
-                                {
+                                if (isInverted) {
                                     posOffset = -posOffset - valueTextWidth;
                                     negOffset = -negOffset - valueTextWidth;
                                 }

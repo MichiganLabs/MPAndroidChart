@@ -136,6 +136,9 @@ public class BubbleChartRenderer extends DataRenderer {
                 if (!dataSet.isDrawValuesEnabled())
                     continue;
 
+                // apply the text-styling defined by the DataSet
+                applyValueTextStyle(dataSet);
+
                 final float phaseX = mAnimator.getPhaseX();
                 final float phaseY = mAnimator.getPhaseY();
 
@@ -210,6 +213,8 @@ public class BubbleChartRenderer extends DataRenderer {
             int maxx = Math.min(dataSet.getEntryPosition(entryTo) + 1, dataSet.getEntryCount());
 
             final BubbleEntry entry = (BubbleEntry) bubbleData.getEntryForHighlight(indice);
+            if (entry == null || entry.getXIndex() != indice.getXIndex())
+                continue;
 
             Transformer trans = mChart.getTransformer(dataSet.getAxisDependency());
             

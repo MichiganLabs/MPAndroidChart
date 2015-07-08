@@ -19,7 +19,7 @@ import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.listener.PieRadarChartTouchListener;
-import com.github.mikephil.charting.utils.SelInfo;
+import com.github.mikephil.charting.utils.SelectionDetail;
 import com.github.mikephil.charting.utils.Utils;
 
 import java.util.ArrayList;
@@ -42,9 +42,6 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     /** flag that indicates if rotation is enabled or not */
     protected boolean mRotateEnabled = true;
 
-    /** the pie- and radarchart touchlistener */
-    protected OnTouchListener mListener;
-
     public PieRadarChartBase(Context context) {
         super(context);
     }
@@ -61,7 +58,7 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     protected void init() {
         super.init();
 
-        mListener = new PieRadarChartTouchListener(this);
+        mChartTouchListener = new PieRadarChartTouchListener(this);
     }
 
     @Override
@@ -72,8 +69,8 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // use the pie- and radarchart listener own listener
-        if (mTouchEnabled && mListener != null)
-            return mListener.onTouch(this, event);
+        if (mTouchEnabled && mChartTouchListener != null)
+            return mChartTouchListener.onTouch(this, event);
         else
             return super.onTouchEvent(event);
     }
@@ -81,8 +78,8 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     @Override
     public void computeScroll() {
 
-        if (mListener instanceof PieRadarChartTouchListener)
-            ((PieRadarChartTouchListener) mListener).computeScroll();
+        if (mChartTouchListener instanceof PieRadarChartTouchListener)
+            ((PieRadarChartTouchListener) mChartTouchListener).computeScroll();
     }
 
     @Override
@@ -275,8 +272,7 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     /**
      * Returns the distance of a certain point on the chart to the center of the
      * chart.
-     * 
-     * @param c the center
+     *
      * @param x
      * @param y
      * @return
@@ -401,16 +397,6 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
      */
     protected abstract float getRequiredBaseOffset();
 
-    /**
-     * set a new (e.g. custom) charttouchlistener NOTE: make sure to
-     * setTouchEnabled(true); if you need touch gestures on the chart
-     * 
-     * @param l
-     */
-    public void setOnTouchListener(OnTouchListener l) {
-        this.mListener = l;
-    }
-
     @Override
     public float getYChartMax() {
         // TODO Auto-generated method stub
@@ -424,27 +410,27 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     }
 
     /**
-     * Returns an array of SelInfo objects for the given x-index. The SelInfo
+     * Returns an array of SelectionDetail objects for the given x-index. The SelectionDetail
      * objects give information about the value at the selected index and the
      * DataSet it belongs to. INFORMATION: This method does calculations at
      * runtime. Do not over-use in performance critical situations.
      *
      * @return
      */
-    public List<SelInfo> getYValsAtIndex(int xIndex) {
+    public List<SelectionDetail> getSelectionDetailsAtIndex(int xIndex) {
 
-        List<SelInfo> vals = new ArrayList<SelInfo>();
+        List<SelectionDetail> vals = new ArrayList<SelectionDetail>();
 
         for (int i = 0; i < mData.getDataSetCount(); i++) {
 
             DataSet<?> dataSet = mData.getDataSetByIndex(i);
 
             // extract all y-values from all DataSets at the given x-index
-            float yVal = dataSet.getYValForXIndex(xIndex);
+            final float yVal = dataSet.getYValForXIndex(xIndex);
+            if (yVal == Float.NaN)
+                continue;
 
-            if (!Float.isNaN(yVal)) {
-                vals.add(new SelInfo(yVal, i, dataSet));
-            }
+            vals.add(new SelectionDetail(yVal, i, dataSet));
         }
 
         return vals;

@@ -33,10 +33,10 @@ Donations
 <a href="https://plus.google.com/share?url=https://github.com/PhilJay/MPAndroidChart" target="_blank" title="share to twitter" style="width:100%"><img src="https://github.com/PhilJay/MPAndroidChart/blob/master/design/googleplus_icon.png" title="Share on Google+" width="35" height=35 />
 <a href="https://www.facebook.com/sharer/sharer.php?u=https://github.com/PhilJay/MPAndroidChart" target="_blank" title="share to twitter" style="width:100%"><img src="https://github.com/PhilJay/MPAndroidChart/blob/master/design/facebook_icon.png" title="Share on Facebook" width="35" height=35 />
 
+[]()
 
- Follow me on **Twitter**: [**PhilippJahoda**](https://twitter.com/PhilippJahoda)
+Follow me on **Twitter**: [**PhilippJahoda**](https://twitter.com/PhilippJahoda)
 
- Download my [**iOS apps**](https://itunes.apple.com/us/artist/philipp-jahoda/id951309215).
 
 Demo
 -----
@@ -175,11 +175,13 @@ dependencies {
 Proguard
 =======
 
-In case you are using Proguard, you will need to whitelist MPAndroidChart, which requires to add the following line to your Proguard configuration file.
+In case you are using Proguard, you will need to **whitelist MPAndroidChart**, which requires to add the following line to your Proguard configuration file.
 
 ```
 -keep class com.github.mikephil.charting.** { *; }
 ```
+
+If you don't do this, animations might not work.
 
 Documentation
 =======

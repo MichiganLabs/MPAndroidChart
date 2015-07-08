@@ -151,7 +151,7 @@ public class BarChartRenderer extends DataRenderer {
      * 
      * @param x the x-position
      * @param y the y-position
-     * @param barspace the space between bars
+     * @param barspaceHalf the space between bars
      * @param from
      * @param trans
      */
@@ -259,14 +259,24 @@ public class BarChartRenderer extends DataRenderer {
                         } else {
 
                             float[] transformed = new float[vals.length * 2];
-                            int cnt = 0;
-                            float add = e.getVal();
+                            float allPos = e.getPositiveSum();
+                            float allNeg = e.getNegativeSum();
 
-                            for (int k = 0; k < transformed.length; k += 2) {
+                            for (int k = 0, idx = 0; k < transformed.length; k += 2, idx++) {
 
-                                add -= vals[cnt];
-                                transformed[k + 1] = (vals[cnt] + add) * mAnimator.getPhaseY();
-                                cnt++;
+                                float value = vals[idx];
+                                float y;
+
+                                if(value >= 0f) {
+
+                                    allPos -= value;
+                                    y = value + allPos;
+                                } else {
+                                    allNeg -= Math.abs(value);
+                                    y = value + allNeg;
+                                }
+
+                                transformed[k + 1] = y * mAnimator.getPhaseY();
                             }
 
                             trans.pointValuesToPixel(transformed);
@@ -335,13 +345,12 @@ public class BarChartRenderer extends DataRenderer {
             mHighlightPaint.setAlpha(set.getHighLightAlpha());
 
             // check outofbounds
-            if (index < mChart.getBarData().getYValCount() && index >= 0
+            if (index >= 0
                     && index < (mChart.getXChartMax() * mAnimator.getPhaseX()) / setCount) {
 
-                BarEntry e = mChart.getBarData().getDataSetByIndex(dataSetIndex)
-                        .getEntryForXIndex(index);
+                BarEntry e = set.getEntryForXIndex(index);
 
-                if (e == null)
+                if (e == null || e.getXIndex() != index)
                     continue;
 
                 float groupspace = mChart.getBarData().getGroupSpace();
