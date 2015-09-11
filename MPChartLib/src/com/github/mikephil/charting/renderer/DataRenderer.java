@@ -9,10 +9,15 @@ import android.graphics.Paint.Style;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.data.DataSet;
-import com.github.mikephil.charting.utils.Highlight;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
+/**
+ * Superclass of all render classes for the different data types (line, bar, ...).
+ *
+ * @author Philipp Jahoda
+ */
 public abstract class DataRenderer extends Renderer {
 
     /** the animator object used to perform animations on the chart data */

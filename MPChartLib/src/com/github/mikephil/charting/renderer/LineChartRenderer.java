@@ -14,13 +14,13 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.LineDataProvider;
-import com.github.mikephil.charting.utils.Highlight;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.util.List;
 
-public class LineChartRenderer extends DataRenderer {
+public class LineChartRenderer extends LineScatterCandleRadarRenderer {
 
     protected LineDataProvider mChart;
 
@@ -94,7 +94,7 @@ public class LineChartRenderer extends DataRenderer {
 
         for (LineDataSet set : lineData.getDataSets()) {
 
-            if (set.isVisible())
+            if (set.isVisible() && set.getEntryCount() > 0)
                 drawDataSet(c, set);
         }
 
@@ -410,7 +410,7 @@ public class LineChartRenderer extends DataRenderer {
 
                 LineDataSet dataSet = dataSets.get(i);
 
-                if (!dataSet.isDrawValuesEnabled())
+                if (!dataSet.isDrawValuesEnabled() || dataSet.getEntryCount() == 0)
                     continue;
 
                 // apply the text-styling defined by the DataSet
@@ -538,8 +538,6 @@ public class LineChartRenderer extends DataRenderer {
             if (set == null || !set.isHighlightEnabled())
                 continue;
 
-            mHighlightPaint.setColor(set.getHighLightColor());
-
             int xIndex = indices[i].getXIndex(); // get the
                                                  // x-position
 
@@ -555,13 +553,13 @@ public class LineChartRenderer extends DataRenderer {
             // y-position
 
             float[] pts = new float[] {
-                    xIndex, mChart.getYChartMax(), xIndex, mChart.getYChartMin(), mChart.getXChartMin(), y,
-                    mChart.getXChartMax(), y
+                    xIndex, y
             };
 
             mChart.getTransformer(set.getAxisDependency()).pointValuesToPixel(pts);
-            // draw the highlight lines
-            c.drawLines(pts, mHighlightPaint);
+
+            // draw the lines
+            drawHighlightLines(c, pts, set);
         }
     }
 }

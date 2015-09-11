@@ -12,13 +12,13 @@ import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
-import com.github.mikephil.charting.utils.Highlight;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.util.List;
 
-public class RadarChartRenderer extends DataRenderer {
+public class RadarChartRenderer extends LineScatterCandleRadarRenderer {
 
     protected RadarChart mChart;
 
@@ -56,7 +56,7 @@ public class RadarChartRenderer extends DataRenderer {
 
         for (RadarDataSet set : radarData.getDataSets()) {
 
-            if (set.isVisible())
+            if (set.isVisible() && set.getEntryCount() > 0)
                 drawDataSet(c, set);
         }
     }
@@ -131,7 +131,7 @@ public class RadarChartRenderer extends DataRenderer {
 
             RadarDataSet dataSet = mChart.getData().getDataSetByIndex(i);
 
-            if (!dataSet.isDrawValuesEnabled())
+            if (!dataSet.isDrawValuesEnabled() || dataSet.getEntryCount() == 0)
                 continue;
 
             // apply the text-styling defined by the DataSet
@@ -219,8 +219,6 @@ public class RadarChartRenderer extends DataRenderer {
             if (set == null || !set.isHighlightEnabled())
                 continue;
 
-            mHighlightPaint.setColor(set.getHighLightColor());
-
             // get the index to highlight
             int xIndex = indices[i].getXIndex();
 
@@ -238,11 +236,11 @@ public class RadarChartRenderer extends DataRenderer {
                     sliceangle * j + mChart.getRotationAngle());
 
             float[] pts = new float[] {
-                    p.x, 0, p.x, mViewPortHandler.getChartHeight(), 0, p.y,
-                    mViewPortHandler.getChartWidth(), p.y
+                    p.x, p.y
             };
 
-            c.drawLines(pts, mHighlightPaint);
+            // draw the lines
+            drawHighlightLines(c, pts, set);
         }
     }
 

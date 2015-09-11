@@ -19,6 +19,7 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.Legend.LegendForm;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.LimitLine.LimitLabelPosition;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
@@ -28,7 +29,7 @@ import com.github.mikephil.charting.data.filter.Approximator;
 import com.github.mikephil.charting.data.filter.Approximator.ApproximatorType;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.Highlight;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.xxmassdeveloper.mpchartexample.custom.MyMarkerView;
 import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
 
@@ -93,31 +94,27 @@ public class LineChartActivity1 extends DemoBase implements OnSeekBarChangeListe
 
         // set the marker to the chart
         mChart.setMarkerView(mv);
-
-        // enable/disable highlight indicators (the lines that indicate the
-        // highlighted Entry)
-        mChart.setHighlightEnabled(false);
         
         // x-axis limit line
-//        LimitLine llXAxis = new LimitLine(10f, "Index 10");
-//        llXAxis.setLineWidth(4f);
-//        llXAxis.enableDashedLine(10f, 10f, 0f);
-//        llXAxis.setLabelPosition(LimitLabelPosition.POS_RIGHT);
-//        llXAxis.setTextSize(10f);
-//        
-//        XAxis xAxis = mChart.getXAxis();
-//        xAxis.addLimitLine(llXAxis);
+        LimitLine llXAxis = new LimitLine(10f, "Index 10");
+        llXAxis.setLineWidth(4f);
+        llXAxis.enableDashedLine(10f, 10f, 0f);
+        llXAxis.setLabelPosition(LimitLabelPosition.RIGHT_BOTTOM);
+        llXAxis.setTextSize(10f);
+
+        XAxis xAxis = mChart.getXAxis();
+        //xAxis.addLimitLine(llXAxis); // add x-axis limit line
         
         LimitLine ll1 = new LimitLine(130f, "Upper Limit");
         ll1.setLineWidth(4f);
         ll1.enableDashedLine(10f, 10f, 0f);
-        ll1.setLabelPosition(LimitLabelPosition.POS_RIGHT);
+        ll1.setLabelPosition(LimitLabelPosition.RIGHT_TOP);
         ll1.setTextSize(10f);
 
         LimitLine ll2 = new LimitLine(-30f, "Lower Limit");
         ll2.setLineWidth(4f);
         ll2.enableDashedLine(10f, 10f, 0f);
-        ll2.setLabelPosition(LimitLabelPosition.POS_RIGHT);
+        ll2.setLabelPosition(LimitLabelPosition.RIGHT_BOTTOM);
         ll2.setTextSize(10f);
 
         YAxis leftAxis = mChart.getAxisLeft();
@@ -348,6 +345,7 @@ public class LineChartActivity1 extends DemoBase implements OnSeekBarChangeListe
 
         // set the line to be drawn like this "- - - - - -"
         set1.enableDashedLine(10f, 5f, 0f);
+        set1.enableDashedHighlightLine(10f, 5f, 0f);
         set1.setColor(Color.BLACK);
         set1.setCircleColor(Color.BLACK);
         set1.setLineWidth(1f);

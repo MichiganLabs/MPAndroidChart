@@ -96,7 +96,7 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
     }
 
     @Override
-    protected void calculateOffsets() {
+    public void calculateOffsets() {
 
         float legendLeft = 0f, legendRight = 0f, legendBottom = 0f, legendTop = 0f;
 
@@ -199,7 +199,7 @@ public abstract class PieRadarChartBase<T extends ChartData<? extends DataSet<? 
         if (this instanceof RadarChart) {
             XAxis x = ((RadarChart) this).getXAxis();
 
-            if (x.isEnabled()) {
+            if (x.isEnabled() && x.isDrawLabelsEnabled()) {
                 min = Math.max(Utils.convertDpToPixel(10f), x.mLabelWidth);
             }
         }

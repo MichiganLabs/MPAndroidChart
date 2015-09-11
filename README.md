@@ -35,7 +35,11 @@ Donations
 
 []()
 
-Follow me on **Twitter**: [**PhilippJahoda**](https://twitter.com/PhilippJahoda)
+Follow me on **Twitter**: [**@PhilippJahoda**](https://twitter.com/PhilippJahoda)
+
+Contact me on **LinkedIn**: [**PhilippJahoda**](https://www.linkedin.com/in/philippjahoda/en)
+
+Look me up on **StackOverflow**: [**Philipp Jahoda**](http://stackoverflow.com/users/1590502/philipp-jahoda)
 
 
 Demo
@@ -142,7 +146,7 @@ repositories {
 }
 
 dependencies {
-	    compile 'com.github.PhilJay:MPAndroidChart:v2.1.0'
+	    compile 'com.github.PhilJay:MPAndroidChart:v2.1.3'
 }
 ```
 
@@ -157,13 +161,13 @@ dependencies {
 <dependency>
 	    <groupId>com.github.PhilJay</groupId>
 	    <artifactId>MPAndroidChart</artifactId>
-	    <version>v2.1.0</version>
+	    <version>v2.1.3</version>
 </dependency>
 ```
 
 **3. jar file only**
  - Download the [**latest .jar file**](https://github.com/PhilJay/MPAndroidChart/releases) from the releases section
- - Copy the **mpandroidchartlibrary-.jar** file into the `libs` folder of your Android application project
+ - Copy the **mpandroidchartlibrary-version.jar** file into the `libs` folder of your Android application project
  - Start using the library
 	
 **4. clone whole repository**

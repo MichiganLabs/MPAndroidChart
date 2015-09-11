@@ -13,6 +13,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.components.YAxis.AxisDependency;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.RadarData;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.renderer.RadarChartRenderer;
 import com.github.mikephil.charting.renderer.XAxisRendererRadarChart;
 import com.github.mikephil.charting.renderer.YAxisRendererRadarChart;
@@ -99,20 +100,34 @@ public class RadarChart extends PieRadarChartBase<RadarData> {
         mXChartMax = mData.getXVals().size() - 1;
         mDeltaX = Math.abs(mXChartMax - mXChartMin);
 
-        mYAxis.mAxisMaximum = !Float.isNaN(mYAxis.getAxisMaxValue()) ? mYAxis
-                .getAxisMaxValue() : maxLeft + topSpaceLeft;
-        mYAxis.mAxisMinimum = !Float.isNaN(mYAxis.getAxisMinValue()) ? mYAxis
-                .getAxisMinValue() : minLeft - bottomSpaceLeft;
-
-        // consider starting at zero (0)
-        if (mYAxis.isStartAtZeroEnabled())
-            mYAxis.mAxisMinimum = 0f;
+        if (mYAxis.isStartAtZeroEnabled()) {
+            if (minLeft < 0.f && maxLeft < 0.f) {
+                // If the values are all negative, let's stay in the negative zone
+                mYAxis.mAxisMinimum = Math.min(0.f, !Float.isNaN(mYAxis.getAxisMinValue()) ? mYAxis.getAxisMinValue() : (minLeft - bottomSpaceLeft));
+                mYAxis.mAxisMaximum = 0.f;
+            }
+            else if (minLeft >= 0.0) {
+                // We have positive values only, stay in the positive zone
+                mYAxis.mAxisMinimum = 0.f;
+                mYAxis.mAxisMaximum = Math.max(0.f, !Float.isNaN(mYAxis.getAxisMaxValue()) ? mYAxis.getAxisMaxValue() : (maxLeft + topSpaceLeft));
+            }
+            else {
+                // Stick the minimum to 0.0 or less, and maximum to 0.0 or more (startAtZero for negative/positive at the same time)
+                mYAxis.mAxisMinimum = Math.min(0.f, !Float.isNaN(mYAxis.getAxisMinValue()) ? mYAxis.getAxisMinValue() : (minLeft - bottomSpaceLeft));
+                mYAxis.mAxisMaximum = Math.max(0.f, !Float.isNaN(mYAxis.getAxisMaxValue()) ? mYAxis.getAxisMaxValue() : (maxLeft + topSpaceLeft));
+            }
+        }
+        else {
+            // Use the values as they are
+            mYAxis.mAxisMinimum = !Float.isNaN(mYAxis.getAxisMinValue()) ? mYAxis.getAxisMinValue() : (minLeft - bottomSpaceLeft);
+            mYAxis.mAxisMaximum = !Float.isNaN(mYAxis.getAxisMaxValue()) ? mYAxis.getAxisMaxValue() : (maxLeft + topSpaceLeft);
+        }
 
         mYAxis.mAxisRange = Math.abs(mYAxis.mAxisMaximum - mYAxis.mAxisMinimum);
     }
 
     @Override
-    protected float[] getMarkerPosition(Entry e, int dataSetIndex) {
+    protected float[] getMarkerPosition(Entry e, Highlight highlight) {
 
         float angle = getSliceAngle() * e.getXIndex() + getRotationAngle();
         float val = e.getVal() * getFactor();
@@ -324,7 +339,7 @@ public class RadarChart extends PieRadarChartBase<RadarData> {
 
     @Override
     protected float getRequiredBaseOffset() {
-        return mXAxis.isEnabled() ? mXAxis.mLabelWidth : Utils.convertDpToPixel(10f);
+        return mXAxis.isEnabled() && mXAxis.isDrawLabelsEnabled() ? mXAxis.mLabelWidth : Utils.convertDpToPixel(10f);
     }
 
     @Override
